@@ -38,7 +38,8 @@ if not os.path.exists(output_folder_path):
     os.makedirs(output_folder_path)
 
 # 生成以时间戳为名称的新文件夹
-new_folder_name = time.strftime("%Y%m%d_%H%M%S")
+timestamp = time.strftime("%Y%m%d_%H%M%S")
+new_folder_name = f"Version_{timestamp}"
 new_folder_path = os.path.join(output_folder_path, new_folder_name)
 os.makedirs(new_folder_path)
 
@@ -81,18 +82,17 @@ try:
 
     # 保存结果到CSV文件
     csv_file_path = os.path.join(output_folder_path, "sdk_references.csv")
-    fieldnames = ['Timestamp', 'APK Package Name', 'Package Name']
-    timestamp = time.strftime("%Y-%m-%d %H:%M:%S")
-    apk_package_name = os.path.basename(apk_file_path)
+    fieldnames = ['Version', 'Package Name', 'APK Package Name', 'Timestamp']
     with open(csv_file_path, 'a', newline='') as csv_file:
         writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
         if os.stat(csv_file_path).st_size == 0:
             writer.writeheader()
         for package_name in sorted(package_names):
             writer.writerow({
-                'Timestamp': timestamp,
-                'APK Package Name': apk_package_name,
-                'Package Name': package_name
+                'Version': timestamp,
+                'Package Name': package_name,
+                'APK Package Name': os.path.basename(apk_file_path),
+                'Timestamp': time.strftime("%Y-%m-%d %H:%M:%S")
             })
 
 except Exception as e:
