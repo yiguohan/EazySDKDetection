@@ -8,7 +8,7 @@ __pycache__/
 Thumbs.db
 
 # 忽略输出目录
-# /SDKOutput/
+/SDKOutput/
 
 # 忽略APKToDetect目录
-# /APKToDetect/
+/APKToDetect/
