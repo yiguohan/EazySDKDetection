@@ -1,0 +1,14 @@
+# 忽略编译生成的文件
+*.pyc
+*.pyo
+__pycache__/
+
+# 忽略操作系统生成的文件
+.DS_Store
+Thumbs.db
+
+# 忽略输出目录
+/SDKOutput/
+
+# 忽略APKToDetect目录
+/APKToDetect/
