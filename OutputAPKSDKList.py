@@ -33,9 +33,10 @@ except (ValueError, IndexError):
     raise ValueError("请输入有效的APK文件编号")
 
 # 获取输出文件夹路径
-output_folder_path = os.path.join(script_path, "SDKOutput")
-if not os.path.exists(output_folder_path):
-    os.makedirs(output_folder_path)
+output_folder_path = os.path.join(script_path, "temp")
+if os.path.exists(output_folder_path):
+    shutil.rmtree(output_folder_path)  # 删除已存在的temp目录
+os.makedirs(output_folder_path)
 
 # 生成以时间戳为名称的新文件夹
 timestamp = time.strftime("%Y%m%d_%H%M%S")
@@ -81,7 +82,9 @@ try:
         print("No package names found.")
 
     # 保存结果到CSV文件
-    csv_file_path = os.path.join(output_folder_path, "sdk_references.csv")
+    csv_folder_path = os.path.join(script_path, "data")
+    os.makedirs(csv_folder_path, exist_ok=True)
+    csv_file_path = os.path.join(csv_folder_path, "sdk_references.csv")
     fieldnames = ['Version', 'Package Name', 'APK Package Name', 'Timestamp']
     with open(csv_file_path, 'a', newline='') as csv_file:
         writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
@@ -100,13 +103,5 @@ except Exception as e:
 
 finally:
     print("Files cleaned up.")
-    # 删除临时文件夹中的除CSV文件外的所有文件
-    for root, dirs, files in os.walk(new_folder_path):
-        for file in files:
-            file_path = os.path.join(root, file)
-            if file_path != csv_file_path:
-                os.remove(file_path)
-        for dir in dirs:
-            dir_path = os.path.join(root, dir)
-            if dir_path != new_folder_path:
-                shutil.rmtree(dir_path)
+    # 删除临时文件夹
+    shutil.rmtree(output_folder_path)
