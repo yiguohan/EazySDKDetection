@@ -10,5 +10,8 @@ Thumbs.db
 # 忽略输出目录
 /SDKOutput/
 
+# 忽略report目录
+/report/
+
 # 忽略APKToDetect目录
 /APKToDetect/
