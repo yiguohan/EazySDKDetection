@@ -5,6 +5,7 @@ import zipfile
 import time
 import shutil
 import csv
+import markdown
 
 # 获取当前脚本所在的路径
 script_path = os.path.dirname(os.path.abspath(__file__))
@@ -69,7 +70,7 @@ try:
                     matches = re.findall(r"import\s+([\w.]+)\s*;", content)
                     for match in matches:
                         # 过滤条件：不包含以java、javax、kotlin开头的包名，并去除类名后的部分
-                        if not match.startswith(("java.", "javax.", "kotlin.")):
+                        if not match.startswith(("java.", "javax.", "kotlin.","android.", "androidx.")):
                             package_name = match.split(".")[:-1]  # 去除类名部分
                             package_names.add(".".join(package_name))
 
@@ -97,6 +98,27 @@ try:
                 'APK Package Name': os.path.basename(apk_file_path),
                 'Timestamp': time.strftime("%Y-%m-%d %H:%M:%S")
             })
+
+    # 生成Markdown文件
+    report_folder_path = os.path.join(script_path, "report")
+    os.makedirs(report_folder_path, exist_ok=True)
+    report_file_name = f"SDK分析报告-{timestamp}.md"
+    report_file_path = os.path.join(report_folder_path, report_file_name)
+
+    with open(report_file_path, 'w') as md_file:
+        md_file.write("| 库名称 | 描述 |\n")
+        md_file.write("| ------ | ---- |\n")
+        for package_name in sorted(package_names):
+            # 根据包名在sdk_libraries中查找对应的标题和描述
+            sdk_libraries_csv_path = os.path.join(script_path, "data", "sdk_libraries.csv")
+            with open(sdk_libraries_csv_path, 'r') as sdk_csv_file:
+                reader = csv.DictReader(sdk_csv_file)
+                for row in reader:
+                    if row['Package Name'] == package_name:
+                        md_file.write(f"| {row['Title']} | {row['Description']} |\n")
+                        break
+
+    print(f"包名列表已保存到 {report_file_path} 文件中。")
 
 except Exception as e:
     print("An error occurred during the detection process:", str(e))
