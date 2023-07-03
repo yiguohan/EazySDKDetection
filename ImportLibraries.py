@@ -1,6 +1,7 @@
 import csv
 import os
 import uuid
+import ast
 
 csv_file_path = os.path.join("data", "sdk_libraries.csv")
 sdk_references_file = os.path.join("data", "sdk_references.csv")
@@ -19,7 +20,6 @@ def update_library(library_rows):
         writer.writeheader()
         writer.writerows(library_rows)
 
-
 def generate_library_id():
     return str(uuid.uuid4())
 
@@ -36,47 +36,48 @@ with open(csv_file_path, 'r') as csv_file:
 # 引导用户选择修复方式
 while True:
     input_option = input("请选择修复方式（1 - 手动修复，2 - 自动修复）：")
-    if  input_option == "2":
+    if input_option == "2":
         # 自动修复库信息
         if not os.path.isfile(sdk_references_file):
             print("找不到 sdk_references.csv 文件，请先生成该文件。")
             continue
 
-        with open(sdk_references_file, 'r') as csv_file: # 现有解析的包名
-            reader = csv.DictReader(csv_file)
-            for row in reader:
-                package_name = row['Package Name'] # 拿到包名
+        with open(sdk_references_file, 'r') as references_csv_file:
+            references_reader = csv.DictReader(references_csv_file)
+            for reference_row in references_reader:
+                package_name = reference_row['Package Name']
+
                 package_name_exist = False
-               
-                for row in sdk_libraries_rows: # 遍历现有库信息
-                    if package_name in row['package_names']:
+                for library_row in sdk_libraries_rows:
+                    if package_name in library_row['package_names']:
                         package_name_exist = True
                         break
-                if(package_name_exist):
+
+                if package_name_exist:
                     print(f"包名：{package_name} 的库信息已存在，跳过。")
                     continue
+
                 print(f"包名：{package_name} 不存在，请补全。")
                 user_input_title = input(f"请输入库名称（{package_name}），如需退出请输入q：")
+
                 if user_input_title == 'q':
-                    save_and_exit = input("是否保存并退出（y/n）：")
-                    if save_and_exit.lower() == 'y':
-                        update_library(sdk_libraries_rows)
+                   break
+
+                is_title_exist = False
+                for library_row in sdk_libraries_rows:
+                    if user_input_title == library_row['title']:
+                        is_title_exist = True
+                        existing_package_names =ast.literal_eval(library_row['package_names'])
+                        if package_name not in existing_package_names:
+                            existing_package_names.append(package_name)
+                            sdk_libraries_rows[sdk_libraries_rows.index(library_row)]['package_names'] = str(existing_package_names)
+                            update_library(sdk_libraries_rows)
+                            print(f"包名：{package_name} 的库信息已存在，添加包名，已保存。")
                         break
-                    else:
-                        break
-                else:
-                    is_title_exist = False
-                    for row in sdk_libraries_rows:
-                        if user_input_title == row['title']:
-                            is_title_exist = True
-                            existing_package_name = row['package_names'].split(',')
-                            if package_name not in existing_package_name:
-                                existing_package_name.append(package_name)
-                                row['package_names'] = ','.join(existing_package_name)
-                                print(f"包名：{package_name} 的库信息已存在，添加包名并跳过。")
-                                break
-                    if is_title_exist:
-                        continue
+
+                if is_title_exist:
+                    continue
+
                 library_data = {}
                 library_data['id'] = generate_library_id()
                 library_data['title'] = user_input_title
